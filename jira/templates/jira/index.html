@@ -1,0 +1,13 @@
+{% extends "jira/base.html" %}
+
+{% block main %}
+    <form action="{% url 'jira:projects'%}" method="post">
+        {% csrf_token %}
+        {{form}}
+        <input type="submit" value="Create">
+    </form>
+    {% for project in projects %}
+
+        <h1>{{project.title}}</h1>
+    {% endfor %}
+{% endblock %}
