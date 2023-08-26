@@ -1,13 +1,27 @@
 {% extends "jira/base.html" %}
 
 {% block main %}
-    <form action="{% url 'jira:projects'%}" method="post">
-        {% csrf_token %}
-        {{form}}
-        <input type="submit" value="Create">
-    </form>
+    <a href="{% url 'jira:projects' %}">create Projects</a>
     {% for project in projects %}
+        <div class="card mt-2">
+                <div class="card-header"><strong>@{{ project.author.username }}</strong></div>
+                <div class="card-body d-flex flex-row justify-content-between">
+                  <div>
+                    <h5 class="card-title">
+                        <a href="{% url 'jira:project' project.id %}">{{project.title}}</a>
+                    </h5>
+                  </div>
+                  <div>
+                    {% if user == project.author or perms.polls.delete_question %}
+                        <form action="{% url 'jira:project' project.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" >Удалить</button>
+                        </form>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="card-footer text-muted">{{project.created_at}}</div>
+              </div>
 
-        <h1>{{project.title}}</h1>
     {% endfor %}
 {% endblock %}

@@ -1,0 +1,12 @@
+{% extends "jira/base.html" %}
+
+{% block main %}
+    <h4>Welcome to our project --> {{project.title }}</h4>
+
+    <h6>Our teams</h6>
+    <ul>
+        {% for member in project_members %}
+        <li>{{ member.username }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

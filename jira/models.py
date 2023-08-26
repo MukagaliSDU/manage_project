@@ -6,9 +6,9 @@ from django.utils import timezone
 
 
 class Project(models.Model):
-    # author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True ,related_name='projects_authored')
     title = models.CharField(max_length=150)
-    created_at = models.DateTimeField(default=timezone.now())
+    created_at = models.DateTimeField(default=timezone.now)
     users = models.ManyToManyField(User, through="UserProject")
 
     def __str__(self):

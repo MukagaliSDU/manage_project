@@ -1,0 +1,14 @@
+{% extends "jira/base.html" %}
+
+{% block main %}
+    <h4>Create your best Project</h4>
+    <form action = "{% url 'jira:projects'%}" method="post">
+        {% csrf_token %}
+        {% if error_msg %}
+            <p>{{ error_msg }}</p>
+        {% endif %}
+
+        {{ form }}
+        <input type="submit" value="Create">
+    </form>
+{% endblock %}

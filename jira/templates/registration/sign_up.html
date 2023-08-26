@@ -1,0 +1,30 @@
+{% extends "jira/base.html" %}
+{% block title %}  Registration  {% endblock%}
+{% block main %}
+    <h4>Login</h4>
+    <ul>
+        {% for error in form.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    <form action = "{% url 'jira:signup' %}" method="post">
+        {% csrf_token %}
+
+         <p>{{ form.username.label_tag }}</p>
+        <p>{{ form.username }}</p>
+
+        <p>{{ form.first_name.label_tag }}</p>
+        <p>{{ form.first_name }}</p>
+
+        <p>{{ form.last_name.label_tag }}</p>
+        <p>{{ form.last_name }}</p>
+
+        <p>{{ form.password1.label_tag }}</p>
+        <p>{{ form.password1 }}</p>
+
+        <p>{{ form.password2.label_tag }}</p>
+        <p>{{ form.password2 }}</p>
+
+        <p><input type="submit" value="registration"></p>
+    </form>
+{% endblock %}
