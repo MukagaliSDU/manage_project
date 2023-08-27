@@ -2,7 +2,7 @@
 
 {% block main %}
     <h4>Welcome to our project --> {{project.title }}</h4>
-
+    <a href="{% url 'jira:user_project' project.id %}">members</a>
     <h6>Our teams</h6>
     <ul>
         {% for member in project_members %}

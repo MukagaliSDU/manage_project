@@ -1,0 +1,23 @@
+{% extends "jira/base.html" %}
+
+{% block main %}
+    <h4>Find your team </h4>
+    <form action = "{% url 'jira:search'%}" method="get">
+        {% csrf_token %}
+        <input type="search" name="title" placeholder="Search your team">
+        <input type="submit" value="find">
+    </form>
+    {% for project in projects %}
+        <div>
+            <h5 class="card-title">
+                <a href="{% url 'jira:project' project.id %}">{{project.title}}</a>
+            </h5>
+
+            <form action="{% url 'jira:user_project' project.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary">Connect</button>
+            </form>
+
+        </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "jira/base.html" %}
+
+{% block main %}
+
+    <h4>Заявки для дабовления</h4>
+    <a href="{% url 'jira:project' project.id %}">назад</a>
+    <h6>Our teams</h6>
+    <ul>
+        {% if user == project.author%}
+            {% for user in users %}
+                <li>{{ user.username }}</li>
+                <form method="post" action="{% url 'jira:join_project' project.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="user", value="{{user.id}}">
+                    <button type="submit" name="action" value="accept">Принять</button>
+                    <button type="submit" name="action" value="reject">Отклонить</button>
+                </form>
+            {% endfor %}
+        {% endif %}
+    </ul>
+{% endblock %}
