@@ -2,18 +2,61 @@
 {% block title %}  Task  detail  {% endblock%}
 {% block main %}
 
-    <div class="container mt-5">
-        <h2>Task Detail</h2>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ task.title }}</h5>
-                <p class="card-text">Description: {{ task.description }}</p>
-                <p class="card-text">Deadline: {{ task.deadline }}</p>
-                <p class="card-text">Created By: {{ task.created_by_id.username }}</p>
-                <p class="card-text">Responsible User: {{ task.responsible_id.username }}</p>
-                <p class="card-text">Status: {{ task.status_id.name }}</p>
+<div class="container mt-5">
+    <h2>Task Detail</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ task.title }}</h5>
+            <p class="card-text">Description: {{ task.description }}</p>
+            <p class="card-text">Deadline: {{ task.deadline }}</p>
+            <p class="card-text">Created By: {{ task.created_by_id.username }}</p>
+            <form action="{% url 'jira:task_detail' project_id=task.project_id.id task_id=task.id %}" method="post">
+                {% csrf_token %}
+                <p class="card-text">
+                    Responsible User:
+                    <select name="responsible_user">
+                        <option  value="{{ task.responsible_id.id }}" >{{task.responsible_id}}</option>
+                        {% for user in members %}
+                            <option value="{{ responsible_id.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p class="card-text">
+                    Board status:
+                    <select name="note">
+                        <option  value="{{ task.notes_id.id }}" >{{task.notes_id.name}}</option>
+                        {% for note in notes %}
+                            <option value="{{ note.id }}">{{ note.name }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p class="card-text">
+                    Status:
+                    <select name="status">
+                        <option value="{{ task.status_id.id }}">{{task.status_id.name}}</option>
+                        {% for status in statuses %}
+                            <option value="{{ status.id }}">{{ status.name }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
                 <p class="card-text">Project: {{ task.project_id.title }}</p>
-            </div>
+                <p class="card-text">updated_at: {{ task.updated_at }}</p>
+                <p class="card-text">
+                    Remaining Time: {{ left_time_days }} days {{ left_time_hours }} hours {{ left_time_minutes }} minutes
+                </p>
+                <input type="submit" value="Change">
+            </form>
+            {% if task.created_by_id == user %}
+            <form action="{% url 'jira:task_delete' project_id=project.id task_id=task.id %}" method="post">
+                 {% csrf_token %}
+                <input type="submit" value="delete">
+            </form>
+            {% endif %}
+
+
+
+
         </div>
     </div>
+</div>
 {% endblock %}

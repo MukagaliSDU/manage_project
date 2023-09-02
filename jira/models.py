@@ -49,5 +49,12 @@ class Task(models.Model):
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 
+class Comments(models.Model):
+    content = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender_comments_user')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recevie_comments_get_user')
+    task_id = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments_to_task')
+
 
 

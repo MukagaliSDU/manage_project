@@ -17,5 +17,7 @@ urlpatterns = [
   path('project/<int:project_id>/join/', views.join_request, name='join_project'),
   path('project/<int:project_id>/task/add/', views.TaskView.as_view(), name="task"),
   path('project/<int:project_id>/task/<int:task_id>/', views.TaskDetailView.as_view(), name="task_detail"),
+  path('project/<int:project_id>/task/<int:task_id>/delete/', views.TaskDetailView.delete, name="task_delete"),
+  path('project/<int:project_id>/task/<int:task_id>/comment/', views.CommentCreateView.as_view(), name="comments"),
 
 ]

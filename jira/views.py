@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 
 from django.contrib.auth.models import User
-from .models import Project, UserProject, Notes, Task
+from .models import Project, UserProject, Notes, Task, Status
 
 from .forms import ProjectForm, SignUpForm, BoardForm, TaskForm
 
@@ -204,10 +204,49 @@ class TaskDetailView(LoginRequiredMixin, View):
     def get(self, request, project_id, task_id):
         task = get_object_or_404(Task, pk=task_id)
         project = get_object_or_404(Project, pk=project_id)
-        print(f"user: {request.user} project: {project} ")
-        print(isUser(user=request.user, project=project))
+        notes = Notes.objects.filter(project_id=project).all()
+        left_time = task.deadline - timezone.now()
+        hours, remainder = divmod(left_time.seconds, 3600)
+        minutes = divmod(remainder, 60)
+        status = Status.objects.all()
+        left_time = task.deadline - timezone.now()
+        members = User.objects.filter(userproject__project_id=project_id, userproject__is_approved=True).all()
         if isUser(user=request.user, project=project):
-            context = {"task": task}
+            context = {"task": task, "notes": notes, "statuses": status, "members": members, "project": project,
+                       "left_time_days": left_time.days,
+                       "left_time_hours": hours,
+                       "left_time_minutes": minutes,
+                       }
             return render(request, "jira/task/detail.html", context)
         else:
             return HttpResponseForbidden("You are not authorized to view this task.")
+
+    def post(self, request, project_id, task_id):
+        task = get_object_or_404(Task, pk=task_id)
+        change_note = request.POST.get('note')
+        change_status = request.POST.get('status')
+        change_user = request.POST.get("responsible_user")
+        db_note = Notes.objects.filter(id=change_note).first()
+        db_status = Status.objects.filter(id=change_status).first()
+        db_user = User.objects.filter(id=change_user).first()
+        task.notes_id = db_note
+        task.status_id = db_status
+        task.updated_at = timezone.now()
+        task.responsible_id = db_user
+        task.save()
+
+        return self.get(request=request, project_id=project_id, task_id=task_id)
+
+    @staticmethod
+    def delete(request, project_id, task_id):
+        task = get_object_or_404(Task, pk=task_id)
+        if task.created_by_id == request.user:
+            task.delete()
+        return redirect(reverse("jira:project", args=(project_id,)))
+
+
+class CommentCreateView(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def post(self, request, project_id, task_id):
+        pass

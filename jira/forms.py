@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Project, Notes, Task
+from .models import Project, Notes, Task, Comments
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -40,3 +40,5 @@ class TaskForm(forms.ModelForm):
         if project:
             self.fields['notes_id'].queryset = Notes.objects.filter(project_id=project)
             self.fields['responsible_id'].queryset = User.objects.filter(userproject__project_id=project.id, userproject__is_approved=True).all()
+
+
