@@ -1,8 +1,9 @@
 from django import forms
 
-from .models import Project
+from .models import Project, Notes, Task
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class ProjectForm(forms.ModelForm):
@@ -20,3 +21,22 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ["username", "first_name", "last_name", "password1", "password2"]
 
+
+class BoardForm(forms.ModelForm):
+    class Meta:
+        model = Notes
+        fields = ["name"]
+
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["title", "description", "deadline", "notes_id", "responsible_id", "status_id"]
+
+    def __init__(self, *args, **kwargs):
+        project = kwargs.pop('project', None)
+        super(TaskForm, self).__init__(*args, **kwargs)
+
+        if project:
+            self.fields['notes_id'].queryset = Notes.objects.filter(project_id=project)
+            self.fields['responsible_id'].queryset = User.objects.filter(userproject__project_id=project.id, userproject__is_approved=True).all()

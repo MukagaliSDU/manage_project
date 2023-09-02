@@ -1,0 +1,19 @@
+{% extends "jira/base.html" %}
+{% block title %}  Task  detail  {% endblock%}
+{% block main %}
+
+    <div class="container mt-5">
+        <h2>Task Detail</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ task.title }}</h5>
+                <p class="card-text">Description: {{ task.description }}</p>
+                <p class="card-text">Deadline: {{ task.deadline }}</p>
+                <p class="card-text">Created By: {{ task.created_by_id.username }}</p>
+                <p class="card-text">Responsible User: {{ task.responsible_id.username }}</p>
+                <p class="card-text">Status: {{ task.status_id.name }}</p>
+                <p class="card-text">Project: {{ task.project_id.title }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

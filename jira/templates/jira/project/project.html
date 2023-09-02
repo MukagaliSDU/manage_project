@@ -3,10 +3,39 @@
 {% block main %}
     <h4>Welcome to our project --> {{project.title }}</h4>
     <a href="{% url 'jira:user_project' project.id %}">members</a>
+    <a href="{% url 'jira:task' project.id %}">create task</a>
     <h6>Our teams</h6>
     <ul>
         {% for member in project_members %}
         <li>{{ member.username }}</li>
         {% endfor %}
     </ul>
+    <div class="container">
+        <h1>Notes</h1>
+        <form action="{% url 'jira:add_board' project.id %}" method="POST">
+            {% csrf_token %}
+            {{board_form}}
+            <input type="submit" value="Create">
+        </form>
+        {% for note in notes%}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{note.name}}</h5>
+                            {% for task in note.task_set.all %}
+                                <a href="{% url 'jira:task_detail' project.id task.id %}">{{ task.title }}</a><br>
+                            {% endfor %}
+
+                            <form action="{% url 'jira:remove_board' project.id %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" value="{{note.id}}" name="board_id">
+                                <input type="submit" value="Delete">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

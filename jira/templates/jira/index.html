@@ -2,8 +2,8 @@
 
 {% block main %}
     <a href="{% url 'jira:projects' %}">create Projects</a>
+    <h4>Your projects</h4>
     {% for project in projects %}
-        <h4>Your projects</h4>
         <div class="card mt-2">
                 <div class="card-header"><strong>@{{ project.author.username }}</strong></div>
                 <div class="card-body d-flex flex-row justify-content-between">

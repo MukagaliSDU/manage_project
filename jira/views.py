@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.views import View, generic
@@ -8,11 +10,12 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django.core.mail import send_mail
 
 from django.contrib.auth.models import User
-from .models import Project, UserProject
+from .models import Project, UserProject, Notes, Task
 
-from .forms import ProjectForm, SignUpForm
+from .forms import ProjectForm, SignUpForm, BoardForm, TaskForm
 
 
 @login_required(login_url="/login/")
@@ -43,6 +46,13 @@ def join_request(request, project_id: int):
         return redirect(reverse("jira:user_project", args=(project_id, )))
 
 
+def isUser(user: User, project: Project):
+    member = UserProject.objects.filter(user_id=user, project_id=project).all()
+    if member:
+        return True
+    return False
+
+
 class ProjectView(LoginRequiredMixin, View):
     login_url = "/login/"
 
@@ -61,17 +71,27 @@ class ProjectView(LoginRequiredMixin, View):
             project.save()
             user_project = UserProject(user_id=request.user, project_id=project, is_approved=True)
             user_project.save()
+            notes_to_create = [
+                Notes(name="To Do", project_id=project),
+                Notes(name="In Progress", project_id=project),
+                Notes(name="Done", project_id=project)
+            ]
+            Notes.objects.bulk_create(notes_to_create)
             return HttpResponseRedirect(reverse("jira:index"))
         return render(request, "jira/project/add_project.html", {"error_msg": form.errors})
 
 
+# Project get board page and delete project
 class ProjectDetailView(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request, project_id):
         project = get_object_or_404(Project, pk=project_id)
         project_members = User.objects.filter(userproject__project_id=project_id, userproject__is_approved=True).all()
-        context = {"project": project, "project_members": project_members}
+        notes = Notes.objects.filter(project_id=project).all()
+        tasks = Task.objects.filter(project_id=project).all()
+        add_board_form = BoardForm()
+        context = {"project": project, "project_members": project_members, "notes": notes, "board_form": add_board_form}
         return render(request, "jira/project/project.html", context)
 
     def post(self, request, project_id):
@@ -81,11 +101,32 @@ class ProjectDetailView(LoginRequiredMixin, View):
         return redirect(reverse("jira:index"))
 
 
-def is_member(self, user: User, project: Project):
-    user = UserProject.objects.filter(user_id=user, project_id=project, is_approved=True).first()
-    if user:
-        return True
-    return False
+# add board to project
+class BoardDetailView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        if isUser(user=request.user, project=project):
+            form = BoardForm(request.POST)
+            if form.is_valid():
+                board = form.save(commit=False)
+                board.project_id = project
+                board.save()
+                return redirect(reverse("jira:project", args=(project_id, )))
+
+
+class BoardDeleteView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        if isUser(user=request.user, project=project):
+            board_id = request.POST["board_id"]
+            db_board = get_object_or_404(Notes, pk=board_id)
+            db_board.delete()
+            return redirect(reverse("jira:project", args=(project_id, )))
+        return render(request, "jira/project/find_project.html")
 
 
 class SearchProjectView(LoginRequiredMixin, View):
@@ -130,3 +171,43 @@ class SignUpView(View):
 
         return render(request, "registration/sign_up.html", {"form": form})
 
+
+class TaskView(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def get(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        form = TaskForm(project=project)
+        context = {"form": form, "project": project}
+        return render(request, "jira/task/task.html", context)
+
+    def post(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        if isUser(user=request.user, project=project):
+            form = TaskForm(request.POST, project=project)
+            if form.is_valid():
+                task = form.save(commit=False)
+                task.created_at = timezone.now()
+                task.created_by_id = request.user
+                task.project_id = project
+                task.save()
+                return redirect(reverse("jira:project", args=(project_id,)))
+            else:
+                print("not work this form")
+                print(form.errors)
+            return render(request, "jira/project/project.html", {"project": project, "form": form})
+
+
+class TaskDetailView(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def get(self, request, project_id, task_id):
+        task = get_object_or_404(Task, pk=task_id)
+        project = get_object_or_404(Project, pk=project_id)
+        print(f"user: {request.user} project: {project} ")
+        print(isUser(user=request.user, project=project))
+        if isUser(user=request.user, project=project):
+            context = {"task": task}
+            return render(request, "jira/task/detail.html", context)
+        else:
+            return HttpResponseForbidden("You are not authorized to view this task.")
