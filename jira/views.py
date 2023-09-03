@@ -10,8 +10,6 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.core.mail import send_mail
-
 from django.contrib.auth.models import User
 from .models import Project, UserProject, Notes, Task, Status
 
@@ -245,8 +243,3 @@ class TaskDetailView(LoginRequiredMixin, View):
         return redirect(reverse("jira:project", args=(project_id,)))
 
 
-class CommentCreateView(LoginRequiredMixin, View):
-    login_url = "/login/"
-
-    def post(self, request, project_id, task_id):
-        pass

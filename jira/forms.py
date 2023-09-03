@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Project, Notes, Task, Comments
+from .models import Project, Notes, Task
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils import timezone
