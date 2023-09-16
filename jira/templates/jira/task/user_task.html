@@ -1,0 +1,16 @@
+{% extends "jira/base.html" %}
+{% block title %} My task {% endblock%}
+{% block main %}
+
+<div class="container mt-5">
+    <h2>My Task</h2>
+    <div class="card">
+        {% for task in tasks %}
+           <li class="list-group-item">
+               <span class="badge badge-primary">{{ task.type }}</span>
+               <a href="{% url 'jira:task_detail' task.project_id.id task.id %}" style="font-family: 'Courier New', monospace;">{{ task.title }}</a>
+           </li>
+        {% endfor%}
+    </div>
+</div>
+{% endblock %}
